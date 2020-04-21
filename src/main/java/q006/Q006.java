@@ -1,11 +1,14 @@
 package q006;
 
-import q006.value.DecimalValue;
-import q006.value.IValue;
-import q006.value.PlusValue;
+import q006.value.*;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Q006 空気を読んで改修
@@ -38,10 +41,18 @@ public class Q006 {
         List<IValue> resultList = new ArrayList<>();
         // 空白文字で区切ってループする
         for (String text: lineText.split("[\\s]+")) {
-            // TODO 一部処理だけ実装
             switch (text) {
                 case "+":   // 足し算
                     resultList.add(new PlusValue());
+                    break;
+                case "-":   // 引き算
+                    resultList.add(new MinusValue());
+                    break;
+                case "*":   // 掛け算
+                    resultList.add(new AsteriskValue());
+                    break;
+                case "/":   // 割り算
+                    resultList.add(new SlashValue());
                     break;
                 default:    // その他は数値として扱う
                     resultList.add(new DecimalValue(text));
@@ -50,5 +61,26 @@ public class Q006 {
         }
         return resultList;
     }
+
+    public static void main(String[] args) {
+
+        String inputLineText;
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(System.in))){
+            System.out.println("逆ポーランド記法で入力してください。");
+            inputLineText = br.readLine();
+        } catch (IOException e) {
+            System.out.println("input failed. message=" + e.getMessage());
+            return;
+        }
+
+        List<IValue> list = parseLine(inputLineText);
+        System.out.println(calcRevercePorland(list));
+    }
+
+    private static BigDecimal calcRevercePorland(List<IValue> valueList){
+        Stack<BigDecimal> stackList = new Stack<>();
+        valueList.forEach(value -> value.execute(stackList));
+        return stackList.pop();
+    }
 }
-// 完成までの時間: xx時間 xx分
+// 完成までの時間: 0時間 28分
