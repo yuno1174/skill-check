@@ -1,5 +1,11 @@
 package q005;
 
+import q003.Q003;
+
+import java.io.*;
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Q005 データクラスと様々な集計
  *
@@ -30,5 +36,61 @@ T-7-30002: xx時間xx分
 （省略）
  */
 public class Q005 {
+    public static void main(String[] args) {
+
+        List<WorkData> workDateList = new ArrayList();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                Q005.class.getResourceAsStream("data.txt")))) {
+            workDateList = reader.lines().skip(1).map(Q005::createWorkData).collect(Collectors.toList());
+        } catch (FileNotFoundException e) {
+            System.out.println("file not found. message="+ e.getMessage());
+        } catch (IOException e) {
+            System.out.println("read file failed. message="+ e.getMessage());
+        }
+
+        // (1) 役職別の合計作業時間
+        System.out.println("役職別の合計作業時間");
+        Map<String, List<WorkData>> groupByPosition =
+                workDateList.stream().collect(
+                        Collectors.groupingBy(WorkData::getPosition));
+        printCollectTime(groupByPosition);
+
+        // (2) Pコード別の合計作業時間
+        System.out.println("Pコード別の合計作業時間");
+        Map<String, List<WorkData>> groupByPCode =
+                workDateList.stream().collect(
+                        Collectors.groupingBy(WorkData::getPCode));
+        printCollectTime(groupByPCode);
+
+        // (3) 社員番号別の合計作業時間
+        System.out.println("社員番号別の合計作業時間");
+        Map<String, List<WorkData>> groupByNumber =
+                workDateList.stream().collect(
+                        Collectors.groupingBy(WorkData::getNumber));
+        printCollectTime(groupByNumber);
+    }
+
+    private static WorkData createWorkData(String line){
+        String[] splittedLine = line.split(",");
+        return new WorkData(
+                splittedLine[0],
+                splittedLine[1],
+                splittedLine[2],
+                splittedLine[3],
+                Integer.parseInt(splittedLine[4]));
+    }
+
+    private static void printCollectTime(Map<String, List<WorkData>> groupedWorkData){
+        groupedWorkData.entrySet().stream().sorted(Comparator.comparing(m -> m.getKey()))
+                .forEach(e -> {
+                    int min = e.getValue().stream().mapToInt(WorkData::getWorkTime).sum();
+                    int hour = min / 60;
+                    min = min % 60;
+                    System.out.println(String.format("%s: %02d時間%02d分",
+                            e.getKey(),
+                            hour,
+                            min));
+                });
+    }
 }
-// 完成までの時間: xx時間 xx分
+// 完成までの時間: 0時間 40分
